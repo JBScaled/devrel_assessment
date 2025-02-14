@@ -1,0 +1,127 @@
+#pragma version 10
+#pragma typetrack false
+
+// smart_contracts.hello_world.contract.HelloWorld.__algopy_entrypoint_with_init() -> uint64:
+main:
+    bytecblock 0x151f7c75
+    // smart_contracts/hello_world/contract.py:6
+    // class HelloWorld(ARC4Contract):
+    txn NumAppArgs
+    bz main_bare_routing@7
+    pushbytess 0x5601ff52 0x9e5782c5 // method "hello(string,string)string", method "getMessage(string)(string)"
+    txna ApplicationArgs 0
+    match main_hello_route@5 main_getMessage_route@6
+
+main_after_if_else@9:
+    // smart_contracts/hello_world/contract.py:6
+    // class HelloWorld(ARC4Contract):
+    pushint 0 // 0
+    return
+
+main_getMessage_route@6:
+    // smart_contracts/hello_world/contract.py:24
+    // @abimethod()
+    txn OnCompletion
+    !
+    assert // OnCompletion is not NoOp
+    txn ApplicationID
+    assert // can only call when not creating
+    // smart_contracts/hello_world/contract.py:6
+    // class HelloWorld(ARC4Contract):
+    txna ApplicationArgs 1
+    extract 2 0
+    // smart_contracts/hello_world/contract.py:24
+    // @abimethod()
+    callsub getMessage
+    bytec_0 // 0x151f7c75
+    swap
+    concat
+    log
+    pushint 1 // 1
+    return
+
+main_hello_route@5:
+    // smart_contracts/hello_world/contract.py:13
+    // @abimethod()
+    txn OnCompletion
+    !
+    assert // OnCompletion is not NoOp
+    txn ApplicationID
+    assert // can only call when not creating
+    // smart_contracts/hello_world/contract.py:6
+    // class HelloWorld(ARC4Contract):
+    txna ApplicationArgs 1
+    extract 2 0
+    txna ApplicationArgs 2
+    extract 2 0
+    // smart_contracts/hello_world/contract.py:13
+    // @abimethod()
+    callsub hello
+    bytec_0 // 0x151f7c75
+    swap
+    concat
+    log
+    pushint 1 // 1
+    return
+
+main_bare_routing@7:
+    // smart_contracts/hello_world/contract.py:6
+    // class HelloWorld(ARC4Contract):
+    txn OnCompletion
+    bnz main_after_if_else@9
+    txn ApplicationID
+    !
+    assert // can only call when creating
+    pushint 1 // 1
+    return
+
+
+// smart_contracts.hello_world.contract.HelloWorld.hello(message: bytes, box_name: bytes) -> bytes:
+hello:
+    // smart_contracts/hello_world/contract.py:13-14
+    // @abimethod()
+    // def hello(self, message: String, box_name: String) -> arc4.String:
+    proto 2 1
+    // smart_contracts/hello_world/contract.py:15-16
+    // # Create and format the greeting message
+    // message_to_add = arc4.String("Hello, " + message)
+    pushbytes "Hello, "
+    frame_dig -2
+    concat
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    // smart_contracts/hello_world/contract.py:18-19
+    // # Store the message in the BoxMap
+    // self.message_boxes[box_name] = Message(message = message_to_add)
+    pushbytes 0x0002
+    dig 1
+    concat
+    frame_dig -1
+    box_del
+    pop
+    frame_dig -1
+    swap
+    box_put
+    // smart_contracts/hello_world/contract.py:21-22
+    // # Return the greeting message
+    // return message_to_add
+    retsub
+
+
+// smart_contracts.hello_world.contract.HelloWorld.getMessage(box_name: bytes) -> bytes:
+getMessage:
+    // smart_contracts/hello_world/contract.py:24-25
+    // @abimethod()
+    // def getMessage(self, box_name: String ) -> Message:
+    proto 1 1
+    // smart_contracts/hello_world/contract.py:26-27
+    // # Return the stored message associated with the key provided
+    // return self.message_boxes[box_name]
+    frame_dig -1
+    box_get
+    assert // check self.message_boxes entry exists
+    retsub
